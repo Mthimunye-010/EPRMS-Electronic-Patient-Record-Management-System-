@@ -1,54 +1,31 @@
 {% extends "base.html" %}
-{% block title %}Audit Log{% endblock %}
+{% block title %}Audit log{% endblock %}
 {% block content %}
-<h3 class="mb-4">Audit Log</h3>
-
-<form method="get" class="row g-2 mb-3">
-    <div class="col-md-4">
-        <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Filter by username...">
-    </div>
-    <div class="col-md-4">
-        <select name="action" class="form-select">
-            <option value="">All actions</option>
-            {% for value, label in action_choices %}
-                <option value="{{ value }}" {% if selected_action == value %}selected{% endif %}>{{ label }}</option>
-            {% endfor %}
-        </select>
-    </div>
-    <div class="col-md-2">
-        <button type="submit" class="btn btn-brand w-100">Filter</button>
-    </div>
+<section class="page-heading mb-4">
+    <div><span class="dashboard-eyebrow dashboard-eyebrow-muted">ADMINISTRATION</span><h1>Audit log</h1><p class="text-muted mb-0">Review record access, account changes, sign-ins, and security events.</p></div>
+    <a class="btn btn-outline-secondary" href="{% url 'audit:security_dashboard' %}">Security overview →</a>
+</section>
+<form method="get" class="audit-filter-card mb-3" role="search">
+    <div class="audit-filter-field"><label for="audit-user">Staff account</label><input id="audit-user" type="text" name="q" value="{{ q }}" maxlength="100" class="form-control" placeholder="Search username"></div>
+    <div class="audit-filter-field"><label for="audit-action">Event type</label><select id="audit-action" name="action" class="form-select"><option value="">All events</option>{% for value, label in action_choices %}<option value="{{ value }}" {% if selected_action == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+    <div class="audit-filter-field"><label for="audit-start">From</label><input id="audit-start" type="date" name="start" value="{{ start_date|date:'Y-m-d' }}" class="form-control"></div>
+    <div class="audit-filter-field"><label for="audit-end">To</label><input id="audit-end" type="date" name="end" value="{{ end_date|date:'Y-m-d' }}" class="form-control"></div>
+    <div class="audit-filter-actions"><button type="submit" class="btn btn-brand">Filter</button><a class="btn btn-light" href="{% url 'audit:audit_log_list' %}">Clear</a></div>
 </form>
 
-<table class="table table-sm bg-white shadow-sm">
-    <thead>
-        <tr><th>Timestamp</th><th>User</th><th>Action</th><th>Target</th><th>Description</th><th>IP</th></tr>
-    </thead>
-    <tbody>
-    {% for log in page_obj %}
-        <tr>
-            <td>{{ log.timestamp|date:"Y-m-d H:i:s" }}</td>
-            <td>{{ log.username_snapshot }}</td>
-            <td>{{ log.get_action_display }}</td>
-            <td>{{ log.target_model }} {{ log.target_repr }}</td>
-            <td>{{ log.description }}</td>
-            <td>{{ log.ip_address|default:"—" }}</td>
-        </tr>
-    {% empty %}
-        <tr><td colspan="6" class="text-center text-muted py-4">No audit log entries found.</td></tr>
-    {% endfor %}
-    </tbody>
-</table>
-
-<nav>
-    <ul class="pagination">
-    {% if page_obj.has_previous %}
-        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
-    {% endif %}
-        <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
-    {% if page_obj.has_next %}
-        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
-    {% endif %}
-    </ul>
-</nav>
+<section class="directory-card card">
+    <div class="directory-caption"><span>Security and account activity</span><span>{{ page_obj.paginator.count }} events</span></div>
+    <div class="table-responsive"><table class="table table-hover align-middle mb-0">
+        <thead><tr><th scope="col">Timestamp</th><th scope="col">Account</th><th scope="col">Event</th><th scope="col">Target</th><th scope="col">Details</th><th scope="col">Source IP</th></tr></thead>
+        <tbody>
+        {% for log in page_obj %}<tr><td class="text-nowrap">{{ log.timestamp|date:"Y-m-d H:i:s" }}</td><td>{{ log.username_snapshot }}</td><td><span class="audit-event-tag">{{ log.get_action_display }}</span></td><td>{% if log.target_model %}{{ log.target_model }}{% if log.target_id %} #{{ log.target_id }}{% endif %}{% else %}—{% endif %}</td><td>{{ log.description|default:"—" }}</td><td>{{ log.ip_address|default:"—" }}</td></tr>
+        {% empty %}<tr><td colspan="6" class="text-center text-muted py-4">No audit events match these filters.</td></tr>{% endfor %}
+        </tbody>
+    </table></div>
+    {% if page_obj.has_other_pages %}<nav class="directory-pagination" aria-label="Audit log pages">
+        {% if page_obj.has_previous %}<a class="btn btn-sm btn-light" href="?q={{ q|urlencode }}&amp;action={{ selected_action|urlencode }}&amp;start={{ start_date|date:'Y-m-d' }}&amp;end={{ end_date|date:'Y-m-d' }}&amp;page={{ page_obj.previous_page_number }}">← Previous</a>{% else %}<span></span>{% endif %}
+        <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}<a class="btn btn-sm btn-light" href="?q={{ q|urlencode }}&amp;action={{ selected_action|urlencode }}&amp;start={{ start_date|date:'Y-m-d' }}&amp;end={{ end_date|date:'Y-m-d' }}&amp;page={{ page_obj.next_page_number }}">Next →</a>{% else %}<span></span>{% endif %}
+    </nav>{% endif %}
+</section>
 {% endblock %}

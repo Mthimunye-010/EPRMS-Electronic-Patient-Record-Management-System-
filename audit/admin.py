@@ -1,9 +1,10 @@
 from django.contrib import admin
 
+from accounts.admin import otp_admin_site
 from .models import AuditLog
 
 
-@admin.register(AuditLog)
+@admin.register(AuditLog, site=otp_admin_site)
 class AuditLogAdmin(admin.ModelAdmin):
     list_display = ("timestamp", "username_snapshot", "action", "target_model", "target_repr")
     list_filter = ("action", "target_model")

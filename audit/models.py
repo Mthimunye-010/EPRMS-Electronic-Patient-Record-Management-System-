@@ -11,7 +11,11 @@ class AuditLog(models.Model):
 
     class Action(models.TextChoices):
         LOGIN = "LOGIN", "Login"
+        LOGIN_FAILED = "LOGIN_FAILED", "Failed login"
         LOGOUT = "LOGOUT", "Logout"
+        ACCESS_DENIED = "ACCESS_DENIED", "Access denied"
+        SENSITIVE_REVEAL = "SENSITIVE_REVEAL", "Sensitive data revealed"
+        REAUTH_FAILED = "REAUTH_FAILED", "Reauthentication failed"
         CREATE = "CREATE", "Create"
         UPDATE = "UPDATE", "Update"
         DELETE = "DELETE", "Delete"
@@ -38,6 +42,10 @@ class AuditLog(models.Model):
         ordering = ["-timestamp"]
         verbose_name = "Audit log entry"
         verbose_name_plural = "Audit log entries"
+        indexes = [
+            models.Index(fields=["action", "-timestamp"], name="audit_action_recent_idx"),
+            models.Index(fields=["ip_address", "-timestamp"], name="audit_ip_recent_idx"),
+        ]
 
     def __str__(self):
         return f"[{self.timestamp:%Y-%m-%d %H:%M}] {self.username_snapshot} - {self.get_action_display()} {self.target_repr}"

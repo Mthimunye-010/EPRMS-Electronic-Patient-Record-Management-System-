@@ -11,6 +11,18 @@
     <a href="{% url 'patients:patient_edit' patient.pk %}" class="btn btn-outline-secondary">Edit Contact Details</a>
     {% endif %}
 </div>
+{% if user.role == "DOCTOR" or user.role == "NURSE" %}
+    {% if allergy_entries %}
+    <section class="allergy-alert mb-4" aria-labelledby="allergy-alert-heading">
+        <span class="allergy-alert-icon" aria-hidden="true">!</span>
+        <div><h2 id="allergy-alert-heading">Recorded allergies</h2>
+            <ul class="mb-0">
+            {% for allergy in allergy_entries %}<li>{{ allergy.description }} <span>· recorded {{ allergy.recorded_at|date:"j M Y" }}</span></li>{% endfor %}
+            </ul>
+        </div>
+    </section>
+    {% endif %}
+{% endif %}
 <div class="row mb-4">
     <div class="col-md-6">
         <div class="card shadow-sm h-100">
@@ -18,6 +30,34 @@
             <div class="card-body">
                 <p><strong>Gender:</strong> {{ patient.get_gender_display }}</p>
                 <p><strong>Date of Birth:</strong> {{ patient.date_of_birth }}</p>
+                {% if user.role == "RECEPTIONIST" or user.role == "DOCTOR" %}
+                    <div class="sa-id-disclosure mb-3">
+                        <strong>South African ID:</strong>
+                        {% if revealed_sa_id %}
+                            <span class="sa-id-value">{{ patient.sa_id_number }}</span>
+                            <span class="badge text-bg-warning">Temporarily revealed</span>
+                            <p class="form-text mb-0">This view is audited. Refresh the page to mask it again.</p>
+                        {% else %}
+                            <span class="sa-id-value">{{ patient.masked_sa_id }}</span>
+                            <details class="mt-2">
+                                <summary>Reveal for an authorised task</summary>
+                                <form method="post" action="{% url 'patients:patient_sa_id_reveal' patient.pk %}" class="mt-2">
+                                    {% csrf_token %}
+                                    <label class="form-label" for="sa-id-purpose">Purpose</label>
+                                    <select class="form-select form-select-sm mb-2" id="sa-id-purpose" name="reason" required>
+                                        <option value="">Choose a purpose</option>
+                                        <option value="identity_check">Identity verification</option>
+                                        <option value="care_task">Patient care task</option>
+                                        <option value="other">Other authorised task</option>
+                                    </select>
+                                    <label class="form-label" for="sa-id-password">Confirm your password</label>
+                                    <input class="form-control form-control-sm mb-2" id="sa-id-password" name="password" type="password" autocomplete="current-password" required>
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Verify and reveal</button>
+                                </form>
+                            </details>
+                        {% endif %}
+                    </div>
+                {% endif %}
                 <p><strong>Phone:</strong> {{ patient.phone_number|default:"—" }}</p>
                 <p><strong>Email:</strong> {{ patient.email|default:"—" }}</p>
                 {% if user.role == "DOCTOR" or user.role == "NURSE" %}

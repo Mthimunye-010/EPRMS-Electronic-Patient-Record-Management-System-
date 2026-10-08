@@ -4,6 +4,8 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import redirect
+from audit.models import AuditLog
+from audit.utils import log_action
 
 
 def role_required(*allowed_roles):
@@ -17,6 +19,11 @@ def role_required(*allowed_roles):
                 raise PermissionDenied("Your account is inactive.")
             if user.role in allowed_roles:
                 return view_func(request, *args, **kwargs)
+            log_action(
+                request,
+                action=AuditLog.Action.ACCESS_DENIED,
+                description=f"Denied {request.method} access to {request.path}.",
+            )
             messages.error(request, "You do not have permission to access that page.")
             raise PermissionDenied("Insufficient role for this action.")
         return _wrapped
@@ -32,6 +39,11 @@ class RoleRequiredMixin:
         if not request.user.is_active or not request.user.is_active_staff:
             raise PermissionDenied("Your account is inactive.")
         if request.user.role not in self.allowed_roles:
+            log_action(
+                request,
+                action=AuditLog.Action.ACCESS_DENIED,
+                description=f"Denied {request.method} access to {request.path}.",
+            )
             messages.error(request, "You do not have permission to access that page.")
             raise PermissionDenied("Insufficient role for this action.")
         return super().dispatch(request, *args, **kwargs)

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Security overview{% endblock %}
+{% block content %}
+<section class="page-heading mb-4">
+    <div><span class="dashboard-eyebrow dashboard-eyebrow-muted">ADMINISTRATION</span><h1>Security overview</h1><p class="text-muted mb-0">Events below are signals to review, not automatic proof of misuse.</p></div>
+    <a class="btn btn-outline-secondary" href="{% url 'audit:audit_log_list' %}">Open full audit log →</a>
+</section>
+<section class="row g-3 mb-4" aria-label="Security events in the last 24 hours">
+    <div class="col-md-4"><article class="security-metric"><span class="security-metric-icon security-risk">!</span><span>Failed sign-ins · 24h</span><strong>{{ failed_logins }}</strong></article></div>
+    <div class="col-md-4"><article class="security-metric"><span class="security-metric-icon">⌑</span><span>Access denials · 24h</span><strong>{{ access_denials }}</strong></article></div>
+    <div class="col-md-4"><article class="security-metric"><span class="security-metric-icon security-risk">◉</span><span>Sensitive reveals · 24h</span><strong>{{ sensitive_reveals }}</strong></article></div>
+</section>
+
+<section class="directory-card card mb-4">
+    <div class="card-header bg-white border-0 px-3 pt-3"><h2 class="h6 mb-1">High-volume patient record views</h2><p class="small text-muted mb-0">20 or more patient records viewed by one account in the last hour.</p></div>
+    <div class="table-responsive"><table class="table align-middle mb-0">
+        <thead><tr><th scope="col">Staff account</th><th scope="col">Patient record views</th><th scope="col">Review</th></tr></thead>
+        <tbody>
+        {% for item in unusual_views %}<tr><td>{{ item.username_snapshot }}</td><td>{{ item.view_count }}</td><td><span class="status-pill status-no_show">Review activity</span></td></tr>
+        {% empty %}<tr><td colspan="3" class="text-center text-muted py-4">No high-volume pattern met this threshold.</td></tr>{% endfor %}
+        </tbody>
+    </table></div>
+</section>
+
+<section class="directory-card card">
+    <div class="card-header bg-white border-0 px-3 pt-3"><h2 class="h6 mb-0">Recent security events · 24h</h2></div>
+    <div class="table-responsive"><table class="table align-middle mb-0">
+        <thead><tr><th scope="col">When</th><th scope="col">Account</th><th scope="col">Event</th><th scope="col">Source IP</th></tr></thead>
+        <tbody>
+        {% for event in security_events %}<tr><td>{{ event.timestamp|date:"j M Y, H:i:s" }}</td><td>{{ event.username_snapshot }}</td><td>{{ event.get_action_display }}{% if event.description %}<small class="d-block text-muted">{{ event.description }}</small>{% endif %}</td><td>{{ event.ip_address|default:"—" }}</td></tr>
+        {% empty %}<tr><td colspan="4" class="text-center text-muted py-4">No security events recorded during this period.</td></tr>{% endfor %}
+        </tbody>
+    </table></div>
+</section>
+{% endblock %}

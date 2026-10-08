@@ -1,7 +1,9 @@
 import random
+import secrets
 from datetime import date, timedelta
 
-from django.core.management.base import BaseCommand
+from django.conf import settings
+from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
 
 from accounts.models import User
@@ -21,35 +23,39 @@ class Command(BaseCommand):
         parser.add_argument("--patients", type=int, default=15, help="Number of synthetic patients to create.")
 
     def handle(self, *args, **options):
+        if not settings.DEBUG or settings.DATABASES["default"]["ENGINE"] != "django.db.backends.sqlite3":
+            raise CommandError("Demo data can only be seeded into a local DEBUG SQLite database.")
+
         random.seed(42)
+        demo_password = secrets.token_urlsafe(20)
 
         self.stdout.write("Creating demo staff accounts...")
         admin, _ = User.objects.get_or_create(
             username="admin_demo",
             defaults=dict(first_name="Admin", last_name="User", role=User.Role.ADMIN, is_staff=True, is_superuser=True),
         )
-        admin.set_password("DemoPass123!")
+        admin.set_password(demo_password)
         admin.save()
 
         doctor, _ = User.objects.get_or_create(
             username="dr_ndlovu",
             defaults=dict(first_name="Sarah", last_name="Ndlovu", role=User.Role.DOCTOR, employee_id="DOC-001"),
         )
-        doctor.set_password("DemoPass123!")
+        doctor.set_password(demo_password)
         doctor.save()
 
         nurse, _ = User.objects.get_or_create(
             username="nurse_maseko",
             defaults=dict(first_name="Palesa", last_name="Maseko", role=User.Role.NURSE, employee_id="NUR-001"),
         )
-        nurse.set_password("DemoPass123!")
+        nurse.set_password(demo_password)
         nurse.save()
 
         receptionist, _ = User.objects.get_or_create(
             username="reception_v",
             defaults=dict(first_name="Vusi", last_name="Radebe", role=User.Role.RECEPTIONIST, employee_id="REC-001"),
         )
-        receptionist.set_password("DemoPass123!")
+        receptionist.set_password(demo_password)
         receptionist.save()
 
         self.stdout.write(f"Creating {options['patients']} synthetic patients...")
@@ -109,6 +115,7 @@ class Command(BaseCommand):
             )
 
         self.stdout.write(self.style.SUCCESS(
-            f"Done. Created {created} new patients. Demo logins (password: DemoPass123!): "
+            f"Done. Created {created} synthetic patients. Demo usernames: "
             f"admin_demo, dr_ndlovu, nurse_maseko, reception_v"
         ))
+        self.stdout.write(self.style.WARNING(f"One-time demo password (local use only): {demo_password}"))

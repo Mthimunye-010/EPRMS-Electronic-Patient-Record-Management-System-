@@ -1,8 +1,8 @@
-from django.contrib import admin
 from django.urls import include, path
+from accounts.admin import otp_admin_site
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    path("admin/", otp_admin_site.urls),
     path("", include("core.urls")),
     path("accounts/", include("accounts.urls")),
     path("patients/", include("patients.urls")),

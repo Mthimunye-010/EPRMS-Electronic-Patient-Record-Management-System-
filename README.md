@@ -54,8 +54,9 @@ pgAdmin):
 
 ```sql
 CREATE DATABASE eprms_db;
-CREATE USER eprms_user WITH PASSWORD 'eprms_password';
+CREATE USER eprms_user;
 GRANT ALL PRIVILEGES ON DATABASE eprms_db TO eprms_user;
+\\password eprms_user
 ```
 
 Copy `.env.example` to `.env` and adjust values as needed, then export them
@@ -85,7 +86,7 @@ Or, to quickly populate the database with realistic **synthetic test data**
 python3 manage.py seed_demo_data --patients 20
 ```
 
-This creates four demo logins (password `DemoPass123!` for all):
+This creates synthetic demo accounts and prints a new one-time local password:
 
 | Username        | Role          |
 |-----------------|---------------|
@@ -93,6 +94,23 @@ This creates four demo logins (password `DemoPass123!` for all):
 | `dr_ndlovu`     | Doctor        |
 | `nurse_maseko`  | Nurse         |
 | `reception_v`   | Receptionist  |
+
+The seeding command refuses to run unless `DEBUG=True` and the database is
+SQLite. Never use demo accounts or demo data in production. Staff sign-in
+requires a password and authenticator code. Provision each authenticator
+from a trusted operator terminal, then add its setup key to an authenticator
+app. Repeat for each account that needs access:
+
+```bash
+python3 manage.py manage_totp dr_ndlovu
+```
+
+To revoke a lost device before provisioning a replacement:
+
+```bash
+python3 manage.py manage_totp dr_ndlovu --revoke
+python3 manage.py manage_totp dr_ndlovu
+```
 
 ## 4. Run the development server
 
@@ -114,15 +132,24 @@ registration.
 
 ## 6. Database backups
 
+Install the `age` encryption utility and set `AGE_RECIPIENT` to the backup
+custodian's public age key. Set the database connection environment variables
+as well. The script fails closed if the password, recipient key, `pg_dump`, or
+`age` is unavailable. For a remote database, it also requires certificate-
+verified TLS using `DJANGO_DB_SSLMODE=verify-full` and
+`DJANGO_DB_SSLROOTCERT`.
+
 ```bash
 ./scripts/backup_db.sh
 ```
 
-Dumps the PostgreSQL database to `backups/eprms_backup_<timestamp>.sql`
-using `pg_dump`, keeping the 14 most recent backups. Restore with:
+Dumps are encrypted before they are retained in `backups/`; the script keeps
+the 14 most recent encrypted archives. Keep the matching private identity
+separately from both the application server and backup storage. Restore by
+decrypting to `pg_restore`:
 
 ```bash
-pg_restore -h localhost -U eprms_user -d eprms_db backups/eprms_backup_YYYYMMDD_HHMMSS.sql
+age --decrypt --identity /secure/location/backup-identity.txt backups/eprms_backup_YYYYMMDD_HHMMSS.dump.age | pg_restore -h localhost -U eprms_user -d eprms_db -
 ```
 
 Consider scheduling this script via `cron` for automatic daily backups in a
@@ -132,12 +159,13 @@ real deployment.
 
 | Action                          | Receptionist | Nurse | Doctor | Administrator |
 |----------------------------------|:---:|:---:|:---:|:---:|
-| Register / edit patient          | ✅  |     |     | ✅  |
-| Search / view patient records    | ✅  | ✅  | ✅  | ✅  |
-| Add medical history / consultation / medication | | ✅ | ✅ | ✅ |
-| Schedule appointments            | ✅  | ✅  | ✅  | ✅  |
+| Register / edit patient          | ✅  |     |     |     |
+| Search / view patient records    | ✅  | ✅  | ✅  |     |
+| Add medical history              |     | ✅  | ✅  |     |
+| Add consultation / medication    |     |     | ✅  |     |
+| Schedule / update appointments   | ✅  | ✅  | ✅  |     |
 | Manage staff accounts            |     |     |     | ✅  |
-| View audit log                   |     |     |     | ✅  |
+| View security dashboard / audit  |     |     |     | ✅  |
 
 ## Notes on the duplicate-detection feature
 
@@ -156,10 +184,12 @@ log for traceability.
 
 ## Next steps / what to extend
 
-This is a working first implementation of the scope. Natural follow-ups
-before a production rollout: password-reset flow, HTTPS/session hardening
-for deployment, pagination on the patient list for large hospitals, and
-exporting patient summaries to PDF.
+Before a production rollout, configure and verify HTTPS, production database
+TLS, encrypted database volumes and backups, secret management, restore
+procedures, monitoring, and operational access controls. Settings enable
+secure cookies and HSTS only when `DEBUG=False`; use a unique secret key and
+explicit allowed hosts. Run Django's deployment checks against production
+settings. This student project is not certified for clinical production use.
 
 ## Security and privacy controls
 
@@ -173,8 +203,19 @@ This version applies privacy-by-design principles for a healthcare student proje
 - Clinical records use protected relationships so a patient cannot be casually deleted together with their history.
 - Audit logs do not store patient names in their target representation and cannot be changed or deleted through Django admin.
 - Login is blocked for disabled staff accounts.
-- Sessions use a 15-minute timeout and an inactivity timeout for unattended workstations.
+- Staff login and Django admin require a TOTP authenticator code in addition to the password.
+- Repeated password or authenticator failures are rate-limited and logged as security events.
+- Sessions use a 15-minute inactivity timeout, a visible warning, and a keep-alive action.
+- Full South African ID values are masked until a permitted user reauthenticates and records a purpose; reveals are audited and responses are no-store.
+- Staff account changes require password confirmation and are audited.
+- Administrators can review failed sign-ins, access denials, sensitive reveals, and high-volume record-view patterns.
 - Production settings support secure cookies, HTTPS redirect and HSTS when DEBUG=False.
+- A Content Security Policy limits scripts, styles, images, forms and framing; the Bootstrap CDN assets use Subresource Integrity checks.
 - A Privacy & Security page explains confidentiality and acceptable use.
+
+The application encrypts backup archives with `age`. Database files and live
+patient fields still require encrypted storage volumes and managed encryption
+keys at the hosting/database layer; Django cannot confirm that infrastructure
+setting from inside this project.
 
 These controls are intended for the university project and are not a claim of legal POPIA compliance or production clinical certification.

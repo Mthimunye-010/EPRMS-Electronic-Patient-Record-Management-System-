@@ -22,6 +22,10 @@ class InactivityTimeoutMiddleware:
 
     def __call__(self, request):
         if request.user.is_authenticated:
+            if not request.user.is_active or not request.user.is_active_staff:
+                logout(request)
+                messages.warning(request, "Your hospital account is no longer active. Please contact an administrator.")
+                return redirect("accounts:login")
             now = timezone.now().timestamp()
             last_activity = request.session.get("last_activity")
             timeout = getattr(settings, "SESSION_INACTIVITY_TIMEOUT", 900)

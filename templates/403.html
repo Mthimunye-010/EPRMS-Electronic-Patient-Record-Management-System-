@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Access denied{% endblock %}
+{% block content %}
+<section class="access-denied-card">
+    <span class="access-denied-icon" aria-hidden="true">!</span>
+    <span class="dashboard-eyebrow dashboard-eyebrow-muted">ACCESS CONTROL</span>
+    <h1>You don’t have access to this page</h1>
+    <p>Your staff role does not allow this action. If you believe you need access for your work, contact your system administrator.</p>
+    <a href="{% url 'core:dashboard' %}" class="btn btn-brand">Return to dashboard</a>
+</section>
+{% endblock %}

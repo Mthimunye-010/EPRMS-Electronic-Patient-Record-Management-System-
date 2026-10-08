@@ -1,0 +1,42 @@
+ .env.example                                       |   3 [32m+[m
+ README.md                                          |  71 [32m+[m[31m-[m
+ accounts/admin.py                                  |  10 [32m+[m[31m-[m
+ accounts/context_processors.py                     |   8 [32m+[m
+ accounts/decorators.py                             |  12 [32m+[m
+ accounts/forms.py                                  |  52 [32m+[m[31m-[m
+ accounts/management/__init__.py                    |   0
+ accounts/management/commands/__init__.py           |   0
+ accounts/management/commands/manage_totp.py        |  38 [32m+[m
+ accounts/urls.py                                   |   2 [32m+[m
+ accounts/views.py                                  |  99 [32m++[m[31m-[m
+ audit/admin.py                                     |   3 [32m+[m[31m-[m
+ audit/middleware.py                                |   4 [32m+[m
+ .../0002_alter_auditlog_action_and_more.py         |  28 [32m+[m
+ audit/models.py                                    |   8 [32m+[m
+ audit/urls.py                                      |   1 [32m+[m
+ audit/views.py                                     |  62 [32m+[m[31m-[m
+ config/settings.py                                 |  42 [32m+[m[31m-[m
+ config/urls.py                                     |   4 [32m+[m[31m-[m
+ core/views.py                                      |  22 [32m+[m[31m-[m
+ eprms_django_project.zip                           | Bin [31m53252[m -> [32m0[m bytes
+ patients/management/commands/seed_demo_data.py     |  19 [32m+[m[31m-[m
+ .../0003_alter_patient_hospital_number_and_more.py |  24 [32m+[m
+ patients/urls.py                                   |   1 [32m+[m
+ patients/views.py                                  |  39 [32m+[m[31m-[m
+ ...3_alter_medicalhistoryentry_options_and_more.py |  22 [32m+[m
+ requirements.txt                                   |   1 [32m+[m
+ scripts/backup_db.sh                               |  50 [32m+[m[31m-[m
+ static/css/styles.css                              | 978 [32m+++++++++++++++++++++[m
+ static/images/hospital-waiting-area.jpg            | Bin [31m0[m -> [32m806097[m bytes
+ static/js/session-security.js                      |  79 [32m++[m
+ templates/403.html                                 |  11 [32m+[m
+ templates/accounts/login.html                      |  79 [32m+[m[31m-[m
+ templates/accounts/security_profile.html           |  22 [32m+[m
+ templates/accounts/staff_list.html                 |   6 [32m+[m[31m-[m
+ templates/audit/audit_log_list.html                |  75 [32m+[m[31m-[m
+ templates/audit/security_dashboard.html            |  35 [32m+[m
+ templates/base.html                                |  37 [32m+[m[31m-[m
+ templates/core/dashboard.html                      |  79 [32m+[m[31m-[m
+ templates/patients/patient_detail.html             |  40 [32m+[m
+ templates/patients/patient_list.html               |  66 [32m+[m[31m-[m
+ 41 files changed, 1937 insertions(+), 195 deletions(-)

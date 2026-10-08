@@ -1,47 +1,72 @@
 {% extends "base.html" %}
 {% block title %}Dashboard{% endblock %}
 {% block content %}
-<h3 class="mb-4">Welcome, {{ user.get_full_name|default:user.username }}</h3>
+<section class="dashboard-welcome mb-4">
+    <div>
+        <span class="dashboard-eyebrow">{{ user.get_role_display }} WORKSPACE</span>
+        <h1>Good day, {{ user.first_name|default:user.username }}</h1>
+        <p class="mb-0">{% if is_admin %}Manage staff access and review system activity.{% elif user.role == "RECEPTIONIST" %}Your front desk at a glance. Keep the day moving smoothly.{% else %}Your patient care workspace, all in one place.{% endif %}</p>
+    </div>
+    <div class="dashboard-date"><span aria-hidden="true">◷</span> {% now "l, j F Y" %}</div>
+</section>
 
-<div class="row mb-4">
-    <div class="col-md-4">
-        <div class="card card-stat p-3">
-            <div class="text-muted">Active Patients</div>
-            <div class="value">{{ total_patients }}</div>
-        </div>
+<section class="dashboard-section mb-4" aria-labelledby="quick-actions-heading">
+    <div class="dashboard-section-heading">
+        <div><span class="dashboard-eyebrow dashboard-eyebrow-muted">GET STARTED</span><h2 id="quick-actions-heading">Quick actions</h2></div>
     </div>
-    <div class="col-md-4">
-        <div class="card card-stat p-3">
-            <div class="text-muted">Today's Appointments</div>
-            <div class="value">{{ todays_appointments|length }}</div>
+    <div class="row g-3">
+        {% if is_admin %}
+        <div class="col-md-6">
+            <a class="quick-action-card" href="{% url 'accounts:staff_list' %}"><span class="quick-action-icon">♙</span><span><strong>Manage staff</strong><small>Review roles and account access</small></span><span class="quick-action-arrow" aria-hidden="true">→</span></a>
         </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card card-stat p-3">
-            <div class="text-muted">Upcoming Scheduled</div>
-            <div class="value">{{ upcoming_appointments_count }}</div>
+        <div class="col-md-6">
+            <a class="quick-action-card" href="{% url 'audit:audit_log_list' %}"><span class="quick-action-icon">◷</span><span><strong>Review audit log</strong><small>See recent system activity</small></span><span class="quick-action-arrow" aria-hidden="true">→</span></a>
         </div>
+        {% else %}
+        {% if user.role == "RECEPTIONIST" %}
+        <div class="col-md-4"><a class="quick-action-card" href="{% url 'patients:patient_register' %}"><span class="quick-action-icon">＋</span><span><strong>Register a patient</strong><small>Create a new patient record</small></span><span class="quick-action-arrow" aria-hidden="true">→</span></a></div>
+        {% endif %}
+        <div class="col-md-4"><a class="quick-action-card" href="{% url 'patients:patient_list' %}"><span class="quick-action-icon">⌕</span><span><strong>Find a patient</strong><small>Search by name or hospital number</small></span><span class="quick-action-arrow" aria-hidden="true">→</span></a></div>
+        <div class="col-md-4"><a class="quick-action-card" href="{% url 'records:appointment_list' %}"><span class="quick-action-icon">▦</span><span><strong>Appointments</strong><small>View and update the schedule</small></span><span class="quick-action-arrow" aria-hidden="true">→</span></a></div>
+        {% endif %}
     </div>
-</div>
+</section>
 
-<div class="card shadow-sm">
-    <div class="card-header bg-white fw-bold">Today's Appointments</div>
-    <div class="card-body p-0">
-        <table class="table mb-0">
-            <thead><tr><th>Time</th><th>Patient</th><th>Doctor</th><th>Status</th></tr></thead>
+{% if is_admin %}
+<section class="row g-3 mb-4" aria-label="Administration summary">
+    <div class="col-md-6"><div class="card-stat dashboard-stat h-100"><span class="stat-icon">♙</span><div class="stat-label">Active staff accounts</div><div class="value">{{ active_staff_count }}</div></div></div>
+    <div class="col-md-6"><div class="card-stat dashboard-stat h-100"><span class="stat-icon">✓</span><div class="stat-label">Access controls</div><div class="stat-caption">Staff roles are managed separately from clinical records.</div></div></div>
+</section>
+{% else %}
+<section class="row g-3 mb-4" aria-label="Patient care summary">
+    <div class="col-md-4"><div class="card-stat dashboard-stat h-100"><span class="stat-icon">♡</span><div class="stat-label">Active patients</div><div class="value">{{ total_patients }}</div></div></div>
+    <div class="col-md-4"><div class="card-stat dashboard-stat h-100"><span class="stat-icon">▦</span><div class="stat-label">Today's appointments</div><div class="value">{{ todays_appointments|length }}</div></div></div>
+    <div class="col-md-4"><div class="card-stat dashboard-stat h-100"><span class="stat-icon">◷</span><div class="stat-label">Upcoming scheduled</div><div class="value">{{ upcoming_appointments_count }}</div></div></div>
+</section>
+
+<section class="dashboard-appointments card" aria-labelledby="todays-appointments-heading">
+    <div class="card-header">
+        <div><span class="dashboard-eyebrow dashboard-eyebrow-muted">YOUR SCHEDULE</span><h2 id="todays-appointments-heading">Today's appointments</h2></div>
+        <a class="btn btn-sm btn-outline-secondary" href="{% url 'records:appointment_list' %}">View schedule <span aria-hidden="true">→</span></a>
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead><tr><th scope="col">Time</th><th scope="col">Patient</th><th scope="col">Care provider</th><th scope="col">Status</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
             <tbody>
             {% for a in todays_appointments %}
                 <tr>
-                    <td>{{ a.time }}</td>
-                    <td><a href="{% url 'patients:patient_detail' a.patient.pk %}">{{ a.patient.full_name }}</a></td>
+                    <td class="appointment-time">{{ a.time|time:"H:i" }}</td>
+                    <td><a class="patient-table-link" href="{% url 'patients:patient_detail' a.patient.pk %}">{{ a.patient.full_name }}<small>{{ a.patient.hospital_number }}</small></a></td>
                     <td>{{ a.doctor.get_full_name|default:"Unassigned" }}</td>
-                    <td>{{ a.get_status_display }}</td>
+                    <td><span class="status-pill status-{{ a.status|lower }}">{{ a.get_status_display }}</span></td>
+                    <td class="text-end"><a class="btn btn-sm btn-light" href="{% url 'patients:patient_detail' a.patient.pk %}">Open record</a></td>
                 </tr>
             {% empty %}
-                <tr><td colspan="4" class="text-center text-muted py-4">No appointments scheduled for today.</td></tr>
+                <tr><td colspan="5"><div class="empty-state"><span class="empty-state-icon" aria-hidden="true">✓</span><strong>You're all caught up</strong><span>No appointments are scheduled for today.</span></div></td></tr>
             {% endfor %}
             </tbody>
         </table>
     </div>
-</div>
+</section>
+{% endif %}
 {% endblock %}

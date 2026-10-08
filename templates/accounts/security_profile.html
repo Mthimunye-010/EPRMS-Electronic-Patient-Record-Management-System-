@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}My security{% endblock %}
+{% block content %}
+<section class="page-heading mb-4">
+    <div><span class="dashboard-eyebrow dashboard-eyebrow-muted">ACCOUNT PROTECTION</span><h1>My security</h1><p class="text-muted mb-0">Review your sign-in protection and recent account activity.</p></div>
+</section>
+<div class="row g-3 mb-4">
+    <div class="col-md-4"><article class="security-info-card"><span class="security-info-icon">✓</span><span class="security-info-label">Authenticator app</span><strong class="security-info-value">{% if mfa_enabled %}Enabled{% else %}Not enrolled{% endif %}</strong><small>{% if mfa_enabled %}A verification code is required at sign-in.{% else %}Contact an administrator to provision your authenticator.{% endif %}</small></article></div>
+    <div class="col-md-4"><article class="security-info-card"><span class="security-info-icon">◷</span><span class="security-info-label">Last successful sign-in</span><strong class="security-info-value">{{ account_last_login|date:"j M Y, H:i"|default:"No previous sign-in" }}</strong><small>Times shown in South African time.</small></article></div>
+    <div class="col-md-4"><article class="security-info-card"><span class="security-info-icon">⌛</span><span class="security-info-label">Idle session limit</span><strong class="security-info-value">{{ session_timeout_minutes }} minutes</strong><small>You’ll see a warning before automatic sign-out.</small></article></div>
+</div>
+<section class="directory-card card">
+    <div class="card-header bg-white border-0 px-3 pt-3"><h2 class="h6 mb-0">Your recent activity</h2></div>
+    <div class="table-responsive"><table class="table align-middle mb-0">
+        <thead><tr><th scope="col">When</th><th scope="col">Activity</th><th scope="col">Details</th></tr></thead>
+        <tbody>
+        {% for event in activity %}<tr><td>{{ event.timestamp|date:"j M Y, H:i:s" }}</td><td>{{ event.get_action_display }}</td><td>{{ event.description|default:"—" }}</td></tr>
+        {% empty %}<tr><td colspan="3" class="text-center text-muted py-4">No recent activity.</td></tr>{% endfor %}
+        </tbody>
+    </table></div>
+</section>
+{% endblock %}

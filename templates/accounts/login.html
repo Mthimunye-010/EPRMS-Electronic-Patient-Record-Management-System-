@@ -1,29 +1,60 @@
 {% extends "base.html" %}
-{% block title %}Login{% endblock %}
+{% load static %}
+{% block title %}Staff login{% endblock %}
 {% block content %}
-<div class="row justify-content-center mt-5">
-    <div class="col-md-5">
-        <div class="card shadow-sm">
-            <div class="card-body p-4">
-                <h3 class="mb-1 text-center">EPRMS</h3>
-                <p class="text-muted text-center mb-4">Electronic Patient Record Management System</p>
-                <form method="post">
-                    {% csrf_token %}
-                    {% if form.non_field_errors %}
-                        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
-                    {% endif %}
-                    <div class="mb-3">
-                        <label class="form-label">Username</label>
-                        {{ form.username }}
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Password</label>
-                        {{ form.password }}
-                    </div>
-                    <button type="submit" class="btn btn-brand w-100">Log in</button>
-                </form>
-            </div>
+<main class="login-page" aria-label="Staff sign in">
+    <section class="login-visual" aria-label="Hospital care">
+        <img class="login-photo" src="{% static 'images/hospital-waiting-area.jpg' %}" alt="A bright hospital with a patient waiting area and care team">
+        <div class="login-brand" aria-label="EPRMS">
+            <span class="login-brand-mark" aria-hidden="true">+</span>
+            <span>EPRMS</span>
         </div>
-    </div>
-</div>
+        <div class="login-visual-copy">
+            <span class="login-eyebrow">CARE, CONNECTED</span>
+            <h1>Every patient.<br>Every moment.<br><em>Better connected.</em></h1>
+            <p>Giving care teams the information they need to make every visit count.</p>
+        </div>
+    </section>
+
+    <section class="login-panel">
+        <div class="login-form-wrap">
+            <div class="login-product-name">
+                <h2>EPRMS</h2>
+                <p>Electronic Patient Record Management System</p>
+            </div>
+            <div class="login-heading-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M12 3.5 19 6v5.3c0 4.4-3 7.6-7 9.2-4-1.6-7-4.8-7-9.2V6l7-2.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 8v7m-3.5-3.5h7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            </div>
+            <span class="login-eyebrow login-eyebrow-dark">STAFF PORTAL</span>
+            <h2>Welcome back</h2>
+            <p class="login-intro">Sign in to access your patient care workspace.</p>
+
+            <form method="post" class="login-form">
+                {% csrf_token %}
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger login-error" role="alert">{{ form.non_field_errors }}</div>
+                {% endif %}
+                <div class="login-field">
+                    <label for="{{ form.username.id_for_label }}">Username</label>
+                    {{ form.username }}
+                    {% if form.username.errors %}<div class="login-field-error">{{ form.username.errors }}</div>{% endif %}
+                </div>
+                <div class="login-field">
+                    <label for="{{ form.password.id_for_label }}">Password</label>
+                    {{ form.password }}
+                    {% if form.password.errors %}<div class="login-field-error">{{ form.password.errors }}</div>{% endif %}
+                </div>
+                <div class="login-field">
+                    <label for="{{ form.otp_token.id_for_label }}">6-digit authenticator code</label>
+                    {{ form.otp_token }}
+                    {% if form.otp_token.errors %}<div class="login-field-error">{{ form.otp_token.errors }}</div>{% endif %}
+                    <div class="form-text">Use the current code from your registered authenticator app.</div>
+                </div>
+                <button type="submit" class="btn btn-brand login-submit">Sign in <span aria-hidden="true">→</span></button>
+            </form>
+            <div class="login-secure-note"><span aria-hidden="true">●</span> Password and authenticator verification required</div>
+        </div>
+        <div class="login-panel-footer">Electronic Patient Record Management System</div>
+    </section>
+</main>
 {% endblock %}
