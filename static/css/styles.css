@@ -1,0 +1,63 @@
+:root {
+  --brand-teal: #0b6e6e;
+  --brand-teal-dark: #084f4f;
+  --brand-bg: #f4f7f7;
+  --brand-warn: #b23b2f;
+}
+
+body {
+  background-color: var(--brand-bg);
+  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.navbar-eprms {
+  background-color: var(--brand-teal-dark);
+}
+
+.navbar-eprms .navbar-brand,
+.navbar-eprms .nav-link {
+  color: #ffffff !important;
+}
+
+.navbar-eprms .nav-link:hover {
+  color: #d7f0ee !important;
+}
+
+.card-stat {
+  border: none;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.card-stat .value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--brand-teal-dark);
+}
+
+.btn-brand {
+  background-color: var(--brand-teal);
+  border-color: var(--brand-teal);
+  color: #fff;
+}
+
+.btn-brand:hover {
+  background-color: var(--brand-teal-dark);
+  border-color: var(--brand-teal-dark);
+  color: #fff;
+}
+
+.duplicate-warning {
+  border-left: 4px solid var(--brand-warn);
+  background-color: #fdf1ef;
+  padding: 1rem;
+  border-radius: 0.5rem;
+}
+
+.table thead {
+  background-color: #e8f2f2;
+}
+
+.badge-role {
+  background-color: var(--brand-teal);
+}

@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}{{ patient.full_name }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+        <h3>{{ patient.full_name }}</h3>
+        <p class="text-muted mb-0">Hospital No: {{ patient.hospital_number }}</p>
+        <span class="badge text-bg-warning mt-2">Confidential patient information</span>
+    </div>
+    {% if user.role == "RECEPTIONIST" %}
+    <a href="{% url 'patients:patient_edit' patient.pk %}" class="btn btn-outline-secondary">Edit Contact Details</a>
+    {% endif %}
+</div>
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white fw-bold">Patient Information</div>
+            <div class="card-body">
+                <p><strong>Gender:</strong> {{ patient.get_gender_display }}</p>
+                <p><strong>Date of Birth:</strong> {{ patient.date_of_birth }}</p>
+                <p><strong>Phone:</strong> {{ patient.phone_number|default:"—" }}</p>
+                <p><strong>Email:</strong> {{ patient.email|default:"—" }}</p>
+                {% if user.role == "DOCTOR" or user.role == "NURSE" %}
+                    <p><strong>Address:</strong> {{ patient.address|default:"—" }}</p>
+                    <p class="mb-0"><strong>Next of Kin:</strong> {{ patient.next_of_kin_name|default:"—" }} {% if patient.next_of_kin_phone %}({{ patient.next_of_kin_phone }}){% endif %}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white fw-bold">Quick Actions</div>
+            <div class="card-body d-flex flex-column gap-2">
+                {% if user.role == "DOCTOR" %}
+                <a href="{% url 'records:consultation_add' patient.pk %}" class="btn btn-brand">+ Record Consultation</a>
+                <a href="{% url 'records:medication_add' patient.pk %}" class="btn btn-outline-secondary">+ Add Medication</a>
+                {% endif %}
+                {% if user.role == "DOCTOR" or user.role == "NURSE" %}
+                <a href="{% url 'records:history_add' patient.pk %}" class="btn btn-outline-secondary">+ Add Medical History</a>
+                {% endif %}
+                <a href="{% url 'records:appointment_add' patient.pk %}" class="btn btn-outline-secondary">+ Schedule Appointment</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if user.role == "DOCTOR" or user.role == "NURSE" %}
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm"><div class="card-header bg-white fw-bold">Medical History</div>
+            <ul class="list-group list-group-flush">
+            {% for h in history_entries %}<li class="list-group-item"><span class="badge badge-role">{{ h.get_category_display }}</span> {{ h.description }}<div class="text-muted small">{{ h.recorded_at }} &middot; {{ h.recorded_by }}</div></li>
+            {% empty %}<li class="list-group-item text-muted">No medical history recorded.</li>{% endfor %}
+            </ul>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm"><div class="card-header bg-white fw-bold">Medications</div>
+            <ul class="list-group list-group-flush">
+            {% for m in medications %}<li class="list-group-item"><div class="fw-bold">{{ m.name }} — {{ m.dosage }} {{ m.frequency }}</div><div class="text-muted small">{{ m.start_date }}{% if m.end_date %} to {{ m.end_date }}{% endif %} &middot; prescribed by {{ m.prescribed_by }}</div></li>
+            {% empty %}<li class="list-group-item text-muted">No medications recorded.</li>{% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if user.role == "DOCTOR" %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card shadow-sm"><div class="card-header bg-white fw-bold">Consultations</div>
+            <ul class="list-group list-group-flush">
+            {% for c in consultations %}<li class="list-group-item"><div class="fw-bold">{{ c.date|date:"Y-m-d H:i" }} &middot; Dr. {{ c.doctor }}</div>{% if c.symptoms %}<div><strong>Symptoms:</strong> {{ c.symptoms }}</div>{% endif %}{% if c.diagnosis %}<div><strong>Diagnosis:</strong> {{ c.diagnosis }}</div>{% endif %}{% if c.treatment_notes %}<div><strong>Treatment:</strong> {{ c.treatment_notes }}</div>{% endif %}</li>
+            {% empty %}<li class="list-group-item text-muted">No consultations recorded.</li>{% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="row">
+    <div class="col-md-12 mb-4"><div class="card shadow-sm"><div class="card-header bg-white fw-bold">Appointments</div>
+        <ul class="list-group list-group-flush">
+        {% for a in appointments %}<li class="list-group-item"><div class="fw-bold">{{ a.date }} at {{ a.time }} — {{ a.get_status_display }}</div><div class="text-muted small">{{ a.reason|default:"Administrative appointment" }} &middot; with {{ a.doctor|default:"Unassigned" }}</div></li>
+        {% empty %}<li class="list-group-item text-muted">No appointments scheduled.</li>{% endfor %}
+        </ul>
+    </div></div>
+</div>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Patients{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h3>Patients</h3>
+        <p class="text-muted mb-0">Only information needed for patient identification is shown in this list.</p>
+    </div>
+    {% if user.role == "RECEPTIONIST" %}
+    <a href="{% url 'patients:patient_register' %}" class="btn btn-brand">+ Register Patient</a>
+    {% endif %}
+</div>
+<form method="get" class="mb-3">
+    <div class="input-group">
+        {{ form.q }}
+        <button class="btn btn-brand" type="submit">Search</button>
+    </div>
+</form>
+<table class="table table-hover bg-white shadow-sm">
+    <thead><tr><th>Hospital No.</th><th>Name</th><th>Gender</th><th>DOB</th><th></th></tr></thead>
+    <tbody>
+    {% for p in patients %}
+        <tr>
+            <td>{{ p.hospital_number }}</td>
+            <td>{{ p.full_name }}</td>
+            <td>{{ p.get_gender_display }}</td>
+            <td>{{ p.date_of_birth }}</td>
+            <td><a href="{% url 'patients:patient_detail' p.pk %}" class="btn btn-sm btn-outline-secondary">View</a></td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="5" class="text-center text-muted py-4">{% if query %}No patients found matching "{{ query }}".{% else %}No patients registered yet.{% endif %}</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<h3>{{ title }}</h3>
+<p class="text-muted">Patient information is confidential and must only be accessed for authorized duties.</p>
+<form method="post" novalidate>
+    {% csrf_token %}
+    {% for field in form %}
+        <div class="mb-3">
+            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+        </div>
+    {% endfor %}
+    {% if duplicates %}
+    <div class="alert alert-warning">
+        <strong>Potential duplicate detected.</strong> Verify the patient's identity before continuing.
+        <ul class="mb-2">
+        {% for d in duplicates %}
+            <li>Hospital number: {{ d.hospital_number }} — Name: {{ d.full_name }} — DOB: {{ d.date_of_birth }}</li>
+        {% endfor %}
+        </ul>
+        <label><input type="checkbox" name="confirm_duplicate" value="yes"> I have verified that this is a different patient.</label>
+    </div>
+    {% endif %}
+    <button class="btn btn-brand" type="submit">Save</button>
+    <a href="{% url 'patients:patient_list' %}" class="btn btn-outline-secondary">Cancel</a>
+</form>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Privacy & Security{% endblock %}
+{% block content %}
+<div class="card shadow-sm">
+<div class="card-body">
+<h3>Privacy and Security</h3>
+<p>Patient information in EPRMS is confidential. Users may only access information needed for their authorized duties.</p>
+<h5>Role-based access</h5>
+<ul>
+<li><strong>Receptionists:</strong> administrative patient information, registration, contact updates and appointments.</li>
+<li><strong>Nurses:</strong> relevant patient and nursing/clinical information.</li>
+<li><strong>Doctors:</strong> clinical information required for diagnosis and treatment.</li>
+<li><strong>Administrators:</strong> system administration and security/audit functions. Administrator status does not automatically grant clinical access.</li>
+</ul>
+<h5>Users must not</h5>
+<ul><li>Share passwords.</li><li>Access records without a legitimate work purpose.</li><li>Photograph or copy patient records without authorization.</li><li>Leave an unlocked workstation displaying patient information.</li><li>Place diagnoses or sensitive clinical information in appointment reasons.</li></ul>
+<h5>Security controls</h5>
+<p>EPRMS uses authentication, role-based authorization, CSRF protection, secure session settings, inactivity logout and audit logging. Production deployment should use HTTPS, encrypted storage/backups, strong secrets and appropriate organizational controls.</p>
+<h5>Data protection</h5>
+<p>The design follows privacy and security principles such as least privilege, data minimisation, purpose limitation and accountability. This student project should not be represented as a legal certification of POPIA compliance.</p>
+</div></div>
+{% endblock %}
